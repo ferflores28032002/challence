@@ -1,0 +1,1146 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Préstamos Dashboard</title>
+    <!-- Bootstrap CSS -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <!-- Font Awesome for icons -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+      :root {
+        --teal-color: #4dd0c8;
+        --light-teal: #b5eae6;
+        --light-peach: #ffdac1;
+        --sidebar-bg: #f8f9fa;
+        --main-bg: #f0f2f5;
+        --card-bg: #ffffff;
+        --text-color: #212529;
+        --border-color: #dee2e6;
+      }
+
+      .dark-mode {
+        --sidebar-bg: #1a1a1a;
+        --main-bg: #121212;
+        --card-bg: #1e1e1e;
+        --text-color: #e0e0e0;
+        --border-color: #333333;
+      }
+
+      body {
+        background-color: var(--main-bg);
+        color: var(--text-color);
+        font-family: Arial, sans-serif;
+        transition: all 0.3s ease;
+      }
+
+      .sidebar {
+        background-color: var(--sidebar-bg);
+        height: 100vh;
+        position: fixed;
+        width: 250px;
+        border-right: 1px solid var(--border-color);
+        padding: 20px 0;
+        transition: all 0.3s ease;
+        z-index: 1000;
+        overflow-y: auto;
+      }
+
+      .main-content {
+        margin-left: 250px;
+        padding: 20px;
+        transition: all 0.3s ease;
+      }
+
+      .user-profile {
+        display: flex;
+        align-items: center;
+        padding: 0 20px 20px;
+        border-bottom: 1px solid var(--border-color);
+        margin-bottom: 20px;
+      }
+
+      .user-avatar {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        border: 1px solid var(--border-color);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 15px;
+        color: #aaa;
+        background-color: var(--card-bg);
+      }
+
+      .user-info h2 {
+        margin: 0;
+        font-size: 18px;
+        font-weight: bold;
+      }
+
+      .user-info p {
+        margin: 0;
+        font-size: 14px;
+        color: #6c757d;
+      }
+
+      .nav-item {
+        display: flex;
+        align-items: center;
+        padding: 12px 20px;
+        color: var(--text-color);
+        text-decoration: none;
+        position: relative;
+      }
+
+      .nav-item:hover {
+        background-color: rgba(77, 208, 200, 0.1);
+      }
+
+      .nav-item i {
+        margin-right: 15px;
+        font-size: 20px;
+        width: 24px;
+        text-align: center;
+      }
+
+      .nav-item .badge {
+        position: absolute;
+        right: 20px;
+        background-color: var(--teal-color);
+        color: white;
+      }
+
+      .sub-nav-item {
+        display: flex;
+        align-items: center;
+        padding: 10px 20px 10px 60px;
+        color: var(--text-color);
+        text-decoration: none;
+        font-size: 14px;
+      }
+
+      .sub-nav-item:hover {
+        background-color: rgba(77, 208, 200, 0.1);
+      }
+
+      .logout-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 20px;
+        padding: 10px;
+        border: 1px solid var(--border-color);
+        border-radius: 5px;
+        background-color: var(--card-bg);
+        color: var(--text-color);
+        text-decoration: none;
+        transition: all 0.3s ease;
+      }
+
+      .logout-btn:hover {
+        background-color: #f8f9fa;
+      }
+
+      .logout-btn i {
+        margin-left: 10px;
+      }
+
+      .top-bar {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        padding: 10px 0;
+        margin-bottom: 20px;
+      }
+
+      .icon-circle {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        border: 1px solid var(--border-color);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-left: 10px;
+        background-color: var(--card-bg);
+        cursor: pointer;
+      }
+
+      .whatsapp-btn {
+        background-color: #000;
+        color: white;
+        border-radius: 20px;
+        padding: 8px 15px;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        text-decoration: none;
+        margin-left: 10px;
+      }
+
+      .whatsapp-btn:hover {
+        color: white;
+        text-decoration: none;
+      }
+
+      .stats-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 20px;
+      }
+
+      .stat-item {
+        display: flex;
+        align-items: center;
+      }
+
+      .stat-icon {
+        color: var(--teal-color);
+        font-size: 24px;
+        margin-right: 10px;
+      }
+
+      .stat-text {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .stat-number {
+        font-size: 20px;
+        font-weight: bold;
+      }
+
+      .stat-label {
+        font-size: 14px;
+      }
+
+      .promo-card {
+        background-color: var(--light-teal);
+        border-radius: 15px;
+        padding: 15px;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .trial-card {
+        background-color: var(--light-peach);
+        border-radius: 15px;
+        padding: 15px;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .card-icon {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+      }
+
+      .icon-bg {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background-color: #000;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .card-text {
+        font-size: 16px;
+        font-weight: bold;
+      }
+
+      .card-buttons {
+        display: flex;
+        gap: 10px;
+      }
+
+      .white-btn {
+        background-color: white;
+        border-radius: 25px;
+        padding: 8px 20px;
+        font-weight: bold;
+        border: none;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+
+      .accounts-card {
+        background-color: var(--card-bg);
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+      }
+
+      .accounts-header {
+        font-size: 20px;
+        font-weight: bold;
+        margin-bottom: 15px;
+      }
+
+      .dropdown-select {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid var(--border-color);
+        border-radius: 5px;
+        background-color: var(--card-bg);
+        color: var(--text-color);
+      }
+
+      .amount-box {
+        margin-top: 15px;
+      }
+
+      .amount {
+        font-size: 24px;
+        font-weight: bold;
+      }
+
+      .amount-label {
+        font-size: 14px;
+        color: #6c757d;
+      }
+
+      .client-card {
+        border: 1px solid #ff6b6b;
+        border-radius: 10px;
+        padding: 15px;
+        margin-top: 15px;
+      }
+
+      .client-header {
+        font-size: 18px;
+        font-weight: bold;
+        margin-bottom: 10px;
+      }
+
+      .payment-info {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 5px;
+      }
+
+      .payment-label {
+        color: #6c757d;
+        font-size: 14px;
+      }
+
+      .payment-value {
+        font-weight: bold;
+      }
+
+      .payment-amount {
+        text-align: right;
+      }
+
+      .payment-amount .amount {
+        font-size: 24px;
+        font-weight: bold;
+      }
+
+      .payment-amount .installment {
+        font-size: 14px;
+      }
+
+      .overdue {
+        color: #ff6b6b;
+        font-size: 14px;
+      }
+
+      .chart-container {
+        background-color: var(--card-bg);
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+      }
+
+      .chart-title {
+        font-size: 18px;
+        margin-bottom: 15px;
+      }
+
+      .built-in {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background-color: #5d5fef;
+        color: white;
+        padding: 8px 15px;
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        z-index: 1000;
+      }
+
+      .add-btn {
+        background-color: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 5px;
+        padding: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+        font-weight: bold;
+        margin-top: 15px;
+        width: 100%;
+      }
+
+      .mobile-header {
+        display: none;
+        padding: 15px;
+        background-color: var(--card-bg);
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .mobile-menu-btn {
+        background: none;
+        border: none;
+        font-size: 20px;
+        color: var(--text-color);
+      }
+
+      /* Login Page Styles */
+      .login-container {
+        max-width: 500px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+
+      .login-header {
+        text-align: center;
+        margin-bottom: 30px;
+      }
+
+      .login-header img {
+        width: 100%;
+        max-height: 120px;
+        object-fit: cover;
+        margin-bottom: 20px;
+      }
+
+      .login-tabs {
+        display: flex;
+        margin-bottom: 30px;
+        border-bottom: 1px solid var(--border-color);
+      }
+
+      .login-tab {
+        flex: 1;
+        text-align: center;
+        padding: 15px;
+        cursor: pointer;
+        color: var(--text-color);
+        text-decoration: none;
+      }
+
+      .login-tab.active {
+        border-bottom: 2px solid #000;
+        font-weight: bold;
+      }
+
+      .login-form {
+        margin-bottom: 30px;
+      }
+
+      .login-subtitle {
+        text-align: center;
+        margin-bottom: 30px;
+        font-size: 18px;
+      }
+
+      .form-input {
+        position: relative;
+        margin-bottom: 20px;
+      }
+
+      .form-input input {
+        width: 100%;
+        padding: 15px 15px 15px 40px;
+        border: 1px solid var(--border-color);
+        border-radius: 5px;
+        background-color: #f0f2f5;
+      }
+
+      .form-input i.prefix {
+        position: absolute;
+        left: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #6c757d;
+      }
+
+      .form-input i.suffix {
+        position: absolute;
+        right: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #6c757d;
+        cursor: pointer;
+      }
+
+      .login-btn {
+        width: 100%;
+        padding: 15px;
+        background-color: #000;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        font-weight: bold;
+        margin-bottom: 20px;
+      }
+
+      .alt-login-btns {
+        display: flex;
+        gap: 10px;
+      }
+
+      .alt-login-btn {
+        flex: 1;
+        padding: 15px;
+        border: 1px solid var(--border-color);
+        border-radius: 5px;
+        background-color: var(--card-bg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        font-weight: bold;
+      }
+
+      @media (max-width: 768px) {
+        .sidebar {
+          transform: translateX(-100%);
+        }
+
+        .sidebar.show {
+          transform: translateX(0);
+        }
+
+        .main-content {
+          margin-left: 0;
+          padding: 0;
+        }
+
+        .mobile-header {
+          display: flex;
+        }
+
+        .top-bar {
+          padding: 10px 15px;
+        }
+
+        .promo-card,
+        .trial-card {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+
+        .card-buttons {
+          margin-top: 10px;
+          width: 100%;
+        }
+
+        .white-btn {
+          flex: 1;
+          justify-content: center;
+        }
+
+        .stat-item {
+          margin-bottom: 15px;
+        }
+
+        .accounts-card {
+          border-radius: 0;
+          margin-bottom: 0;
+        }
+
+        .chart-container {
+          border-radius: 0;
+        }
+
+        .built-in {
+          bottom: 10px;
+          right: 10px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <!-- Login Page (Hidden by default) -->
+      <div id="login-page" style="display: none">
+        <div class="login-container">
+          <div class="login-header">
+            <img
+              src="https://png.pngtree.com/background/20250307/original/pngtree-modern-blue-aesthetic-wallpaper-abstract-dotted-and-lined-circles-picture-image_16363573.jpg"
+              alt="Background pattern"
+            />
+          </div>
+
+          <div class="login-tabs">
+            <a href="#" class="login-tab active" id="login-tab">Ingresar</a>
+            <a href="#" class="login-tab" id="register-tab">Registrarte</a>
+          </div>
+
+          <div class="login-subtitle">
+            El mejor lugar para gestionar tus préstamos
+          </div>
+
+          <div id="login-form" class="login-form">
+            <div class="form-input">
+              <i class="fas fa-at prefix"></i>
+              <input type="email" placeholder="tu@email.com" />
+            </div>
+
+            <div class="form-input">
+              <i class="fas fa-lock prefix"></i>
+              <input type="password" placeholder="Contraseña" />
+              <i class="fas fa-eye suffix toggle-password"></i>
+            </div>
+
+            <button class="login-btn" id="login-submit">Ingresar</button>
+
+            <div class="alt-login-btns">
+              <button class="alt-login-btn">
+                <i class="fas fa-play"></i> Demo
+              </button>
+              <button class="alt-login-btn">
+                <i class="fab fa-google"></i> Google
+              </button>
+            </div>
+          </div>
+
+          <div id="register-form" class="login-form" style="display: none">
+            <div class="form-input">
+              <i class="fas fa-at prefix"></i>
+              <input type="email" placeholder="your@email.com" />
+            </div>
+
+            <div class="form-input">
+              <i class="fas fa-lock prefix"></i>
+              <input type="password" placeholder="Contraseña" />
+              <i class="fas fa-eye suffix toggle-password"></i>
+            </div>
+
+            <div class="form-input">
+              <i class="fas fa-lock prefix"></i>
+              <input type="password" placeholder="Confirmar Contraseña" />
+              <i class="fas fa-eye suffix toggle-password"></i>
+            </div>
+
+            <button class="login-btn">Registrarte</button>
+
+            <div class="alt-login-btns">
+              <button class="alt-login-btn">
+                <i class="fas fa-play"></i> Demo
+              </button>
+              <button class="alt-login-btn">
+                <i class="fab fa-google"></i> Google
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="built-in">
+          Built in FlutterFlow <i class="fas fa-cube"></i>
+        </div>
+      </div>
+
+      <!-- Dashboard Page -->
+      <div id="dashboard-page">
+        <!-- Mobile Header -->
+        <div class="mobile-header">
+          <button class="mobile-menu-btn" id="mobile-menu-toggle">
+            <i class="fas fa-bars"></i>
+          </button>
+          <div class="mobile-icons">
+            <div class="icon-circle">
+              <i class="fas fa-bell"></i>
+            </div>
+            <div class="icon-circle" id="dark-mode-toggle-mobile">
+              <i class="fas fa-moon"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="sidebar" id="sidebar">
+          <div class="user-profile">
+            <div class="user-avatar">
+              <i class="fas fa-user"></i>
+            </div>
+            <div class="user-info">
+              <h2>User</h2>
+              <p>Administrador</p>
+            </div>
+          </div>
+
+          <a href="#" class="nav-item">
+            <i class="fas fa-th"></i>
+            <span>Resumen</span>
+          </a>
+
+          <a href="#" class="nav-item">
+            <i class="fas fa-file-alt"></i>
+            <span>Solicitudes</span>
+            <span class="badge rounded-pill">0</span>
+          </a>
+
+          <a href="#" class="nav-item">
+            <i class="fas fa-users"></i>
+            <span>Clientes</span>
+          </a>
+
+          <a href="#" class="nav-item">
+            <i class="fas fa-file-invoice-dollar"></i>
+            <span>Préstamos</span>
+          </a>
+
+          <a href="#" class="nav-item">
+            <i class="fas fa-money-bill-wave"></i>
+            <span>Pagos</span>
+          </a>
+
+          <a href="#" class="nav-item">
+            <i class="fas fa-cash-register"></i>
+            <span>Caja</span>
+          </a>
+
+          <a href="#" class="nav-item">
+            <i class="fas fa-wallet"></i>
+            <span>Cartera</span>
+          </a>
+
+          <a href="#" class="nav-item">
+            <i class="fas fa-map-marked-alt"></i>
+            <span>Mapa</span>
+          </a>
+
+          <a href="#" class="nav-item">
+            <i class="fas fa-route"></i>
+            <span>Ruta</span>
+          </a>
+
+          <a href="#" class="nav-item">
+            <i class="fas fa-chart-bar"></i>
+            <span>Reportes</span>
+          </a>
+
+          <a href="#" class="sub-nav-item">
+            <span>Transacciones</span>
+          </a>
+
+          <a href="#" class="sub-nav-item">
+            <span>Ingresos VS Gastos</span>
+          </a>
+
+          <a href="#" class="sub-nav-item">
+            <span>Saldo por Antigüedad</span>
+          </a>
+
+          <a href="#" class="nav-item">
+            <i class="fas fa-cog"></i>
+            <span>Configuración</span>
+          </a>
+
+          <a href="#" class="sub-nav-item">
+            <span>Empresa</span>
+          </a>
+
+          <a href="#" class="sub-nav-item">
+            <span>Plantillas</span>
+          </a>
+
+          <a href="#" class="sub-nav-item">
+            <span>Días Feriados</span>
+          </a>
+
+          <a href="#" class="nav-item">
+            <i class="fas fa-shield-alt"></i>
+            <span>Seguridad</span>
+          </a>
+
+          <a href="#" class="sub-nav-item">
+            <span>Agentes</span>
+          </a>
+
+          <a href="#" class="sub-nav-item">
+            <span>Roles & Permisos</span>
+          </a>
+
+          <a href="#" class="sub-nav-item">
+            <span>Autorizaciones</span>
+          </a>
+
+          <a href="#" class="nav-item">
+            <i class="fas fa-calculator"></i>
+            <span>Calculadora</span>
+          </a>
+
+          <a href="#" class="logout-btn" id="logout-btn">
+            Log out <i class="fas fa-sign-out-alt"></i>
+          </a>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+          <!-- Top Bar -->
+          <div class="top-bar">
+            <div class="icon-circle">
+              <i class="fas fa-bell"></i>
+            </div>
+            <div class="icon-circle" id="dark-mode-toggle">
+              <i class="fas fa-moon"></i>
+            </div>
+            <a href="#" class="whatsapp-btn">
+              <i class="fab fa-whatsapp"></i> WhatsApp
+            </a>
+          </div>
+
+          <!-- Promo Cards -->
+          <div class="promo-card">
+            <div class="card-icon">
+              <div class="icon-bg" style="background-color: var(--teal-color)">
+                <i class="fas fa-tag"></i>
+              </div>
+              <div class="card-text">
+                Síguenos en instagram y obten un 50% de descuento en tu primer
+                mes.
+              </div>
+            </div>
+            <div class="card-buttons">
+              <button class="white-btn">
+                <i class="fab fa-instagram"></i> Síguenos
+              </button>
+              <button class="white-btn">Ayuda</button>
+            </div>
+          </div>
+
+          <div class="trial-card">
+            <div class="card-icon">
+              <div class="icon-bg">
+                <i class="fas fa-info"></i>
+              </div>
+              <div class="card-text">
+                Te quedan 5 días para probar el sistema!
+              </div>
+            </div>
+            <div class="card-buttons">
+              <button class="white-btn">Ver tutoriales</button>
+              <button class="white-btn">Comprar</button>
+            </div>
+          </div>
+
+          <!-- Stats Row -->
+          <div class="row mb-4">
+            <div class="col-md-3 col-6 mb-3">
+              <div class="stat-item">
+                <div class="stat-icon">
+                  <i class="fas fa-users"></i>
+                </div>
+                <div class="stat-text">
+                  <div class="stat-number">10 de 30</div>
+                  <div class="stat-label">Clientes Activos</div>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-3 col-6 mb-3">
+              <div class="stat-item">
+                <div class="stat-icon">
+                  <i class="fas fa-file-invoice-dollar"></i>
+                </div>
+                <div class="stat-text">
+                  <div class="stat-number">8 de 38</div>
+                  <div class="stat-label">Préstamos Activos</div>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-3 col-6 mb-3">
+              <div class="stat-item">
+                <div class="stat-icon">
+                  <i class="fas fa-hand-holding-usd"></i>
+                </div>
+                <div class="stat-text">
+                  <div class="stat-number">$2000</div>
+                  <div class="stat-label">Total Prestado</div>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-3 col-6 mb-3">
+              <div class="stat-item">
+                <div class="stat-icon">
+                  <i class="fas fa-chart-line"></i>
+                </div>
+                <div class="stat-text">
+                  <div class="stat-number">$10000</div>
+                  <div class="stat-label">Proyección de Intereses</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Accounts and Chart -->
+          <div class="row">
+            <div class="col-md-8">
+              <div class="accounts-card">
+                <div class="accounts-header">Cuentas por cobrar</div>
+
+                <div class="row">
+                  <div class="col-md-6">
+                    <select class="dropdown-select">
+                      <option>Enero</option>
+                      <option>Febrero</option>
+                      <option>Marzo</option>
+                      <option>Abril</option>
+                    </select>
+
+                    <div class="amount-box">
+                      <div class="amount">$0.00</div>
+                      <div class="amount-label">Ingresos</div>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <select class="dropdown-select">
+                      <option>Todas las rutas</option>
+                      <option>Ruta 1</option>
+                      <option>Ruta 2</option>
+                    </select>
+
+                    <div class="amount-box">
+                      <div class="amount">$0.00</div>
+                      <div class="amount-label">Egresos</div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Add Buttons (Mobile) -->
+                <div class="d-md-none">
+                  <button class="add-btn">
+                    <i class="fas fa-plus"></i> Nuevo Cliente
+                  </button>
+                  <button class="add-btn">
+                    <i class="fas fa-plus"></i> Nuevo Préstamo
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-md-4">
+              <div class="chart-container">
+                <div class="chart-title">gastos 2024</div>
+                <canvas id="expensesChart"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Built in Badge -->
+    <div class="built-in">Built in FlutterFlow <i class="fas fa-cube"></i></div>
+
+    <!-- Bootstrap and JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        // Toggle between login and register forms
+        const loginTab = document.getElementById("login-tab");
+        const registerTab = document.getElementById("register-tab");
+        const loginForm = document.getElementById("login-form");
+        const registerForm = document.getElementById("register-form");
+
+        loginTab.addEventListener("click", function (e) {
+          e.preventDefault();
+          loginTab.classList.add("active");
+          registerTab.classList.remove("active");
+          loginForm.style.display = "block";
+          registerForm.style.display = "none";
+        });
+
+        registerTab.addEventListener("click", function (e) {
+          e.preventDefault();
+          registerTab.classList.add("active");
+          loginTab.classList.remove("active");
+          registerForm.style.display = "block";
+          loginForm.style.display = "none";
+        });
+
+        // Toggle password visibility
+        const togglePasswordBtns =
+          document.querySelectorAll(".toggle-password");
+        togglePasswordBtns.forEach((btn) => {
+          btn.addEventListener("click", function () {
+            const input = this.previousElementSibling;
+            if (input.type === "password") {
+              input.type = "text";
+              this.classList.remove("fa-eye");
+              this.classList.add("fa-eye-slash");
+            } else {
+              input.type = "password";
+              this.classList.remove("fa-eye-slash");
+              this.classList.add("fa-eye");
+            }
+          });
+        });
+
+        // Login functionality
+        const loginSubmit = document.getElementById("login-submit");
+        loginSubmit.addEventListener("click", function () {
+          document.getElementById("login-page").style.display = "none";
+          document.getElementById("dashboard-page").style.display = "block";
+        });
+
+        // Logout functionality
+        const logoutBtn = document.getElementById("logout-btn");
+        logoutBtn.addEventListener("click", function () {
+          document.getElementById("dashboard-page").style.display = "none";
+          document.getElementById("login-page").style.display = "block";
+        });
+
+        // Mobile menu toggle
+        const mobileMenuToggle = document.getElementById("mobile-menu-toggle");
+        const sidebar = document.getElementById("sidebar");
+
+        mobileMenuToggle.addEventListener("click", function () {
+          sidebar.classList.toggle("show");
+        });
+
+        // Dark mode toggle
+        const darkModeToggle = document.getElementById("dark-mode-toggle");
+        const darkModeToggleMobile = document.getElementById(
+          "dark-mode-toggle-mobile"
+        );
+        const moonIcon = darkModeToggle.querySelector("i");
+        const moonIconMobile = darkModeToggleMobile.querySelector("i");
+
+        function toggleDarkMode() {
+          document.body.classList.toggle("dark-mode");
+
+          if (document.body.classList.contains("dark-mode")) {
+            moonIcon.classList.remove("fa-moon");
+            moonIcon.classList.add("fa-sun");
+            moonIconMobile.classList.remove("fa-moon");
+            moonIconMobile.classList.add("fa-sun");
+          } else {
+            moonIcon.classList.remove("fa-sun");
+            moonIcon.classList.add("fa-moon");
+            moonIconMobile.classList.remove("fa-sun");
+            moonIconMobile.classList.add("fa-moon");
+          }
+
+          // Redraw chart when toggling dark mode
+          createChart();
+        }
+
+        darkModeToggle.addEventListener("click", toggleDarkMode);
+        darkModeToggleMobile.addEventListener("click", toggleDarkMode);
+
+        // Create expenses chart
+        function createChart() {
+          const isDarkMode = document.body.classList.contains("dark-mode");
+          const textColor = isDarkMode ? "#e0e0e0" : "#666";
+          const gridColor = isDarkMode
+            ? "rgba(255, 255, 255, 0.1)"
+            : "rgba(0, 0, 0, 0.1)";
+
+          // Get the canvas element
+          const ctx = document.getElementById("expensesChart").getContext("2d");
+
+          // Check if chart already exists and destroy it
+          if (window.expensesChart) {
+            window.expensesChart.destroy();
+          }
+
+          // Create new chart
+          window.expensesChart = new Chart(ctx, {
+            type: "bar",
+            data: {
+              labels: ["Enero", "Feb", "Marzo", "Abril"],
+              datasets: [
+                {
+                  label: "Tipo 1",
+                  data: [15, 30, 20, 15],
+                  backgroundColor: "#4DD0C8",
+                  barPercentage: 0.8,
+                  categoryPercentage: 0.7,
+                },
+                {
+                  label: "Tipo 2",
+                  data: [15, 15, 10, 15],
+                  backgroundColor: "#8A2BE2",
+                  barPercentage: 0.8,
+                  categoryPercentage: 0.7,
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              scales: {
+                x: {
+                  stacked: true,
+                  grid: {
+                    display: false,
+                  },
+                  ticks: {
+                    color: textColor,
+                  },
+                },
+                y: {
+                  stacked: true,
+                  beginAtZero: true,
+                  max: 100,
+                  grid: {
+                    color: gridColor,
+                  },
+                  ticks: {
+                    color: textColor,
+                  },
+                },
+              },
+              plugins: {
+                legend: {
+                  display: false,
+                },
+              },
+            },
+          });
+        }
+
+        // Initialize chart
+        createChart();
+
+        // Example: Show alert when clicking on buttons
+        const buttons = document.querySelectorAll(".white-btn, .add-btn");
+        buttons.forEach((button) => {
+          button.addEventListener("click", function () {
+            const buttonText = this.textContent.trim();
+            alert(`Has hecho clic en: ${buttonText}`);
+          });
+        });
+      });
+    </script>
+  </body>
+</html>
